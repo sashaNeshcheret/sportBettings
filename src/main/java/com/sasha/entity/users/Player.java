@@ -2,19 +2,38 @@ package com.sasha.entity.users;
 
 import com.sasha.util.Currency;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Entity
 public class Player implements User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Column
     private String name;
+    @Column(name = "account_number")
     private long accountNumber;
+    @Column
     private BigDecimal balance;
-
+    @Column
     private Currency currency;
+    @Column(name = "birth_date")
     private LocalDate dateOfBirth;
 
     public static Builder builder() {
         return new Player().new Builder();
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override

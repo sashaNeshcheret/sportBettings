@@ -1,7 +1,16 @@
 package com.sasha.dataAccess;
 
-import org.springframework.stereotype.Repository;
+import com.sasha.entity.users.User;
+import org.springframework.util.StringUtils;
 
-@Repository
-public class UserRepository {
+public interface UserRepository {
+
+    void createUser(User user);
+
+    User findById(Integer id);
+
+    User findByName(String name);
+
+    User update(User user);
+
 }

@@ -1,5 +1,6 @@
 package com.sasha.services;
 
+import com.sasha.dataAccess.WagerRepository;
 import com.sasha.entity.bets.Bet;
 import com.sasha.entity.bets.DisplayedBet;
 import com.sasha.entity.bets.Outcome;
@@ -19,9 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 @Service
 public class GameService {
@@ -29,47 +28,50 @@ public class GameService {
     private BetService betService;
     private UserService userService;
     private UserFactory userFactory;
+    private WagerRepository wagerRepository;
     private BetIO betIO;
     private Random random;
 
     @Autowired
     private AnnotationConfigApplicationContext context;
 
-    public GameService(SportEventCreator sportEventGenerator, BetService betService, UserService userService, UserFactory userFactory, BetIO betIO, Random random) {
+    public GameService(SportEventCreator sportEventGenerator, BetService betService, UserService userService, UserFactory userFactory, WagerRepository wagerRepository, BetIO betIO, Random random) {
         this.sportEventGenerator = sportEventGenerator;
         this.betService = betService;
         this.userService = userService;
         this.userFactory = userFactory;
+        this.wagerRepository = wagerRepository;
         this.betIO = betIO;
         this.random = random;
+
     }
 
     public void iterate() {
         User player = userFactory.getUser();
-        List<Wager> wagers = new ArrayList<>();
         List<SportEvent> sportEvents = sportEventGenerator.generateSportsEvent();
         List<Bet> bets = betService.createBets(sportEvents);
         try {
             while (true) {
-                wagers.add(composeWager(player, bets));
+                composeWager(player, bets);
             }
         } catch (StopProcessingException e) {
             System.out.println("All bets are received");
         }
         List<Outcome> winOutcomes = gameSimulation(bets);
-        markWinners(wagers, winOutcomes);
-        resultComputing(wagers);
-        Map<User, List<Wager>> collect = wagers.stream().collect(Collectors.groupingBy(Wager::getPlayer));
-        collect.keySet().stream().map(User::getBalance).forEach(System.out::println);
-        System.out.println("You new balance is: " + player.getBalance());
+        markWinners(winOutcomes);
+        resultComputing();
+        userService.showCurrentBalance(player);
+//        System.out.println("You new balance is: " + player.getBalance());
     }
 
-    private void markWinners(List<Wager> wagers, List<Outcome> winOutcomes) {
-        for (int i = 0; i < wagers.size() - 1; i++) {
-            OutcomeOdd wagerOutcomeOdd = wagers.get(i).getOutcomeOdd();
+    private void markWinners(List<Outcome> winOutcomes) {
+        List<Wager> wagers = wagerRepository.findAll();
+        for (Wager wager : wagers) {
+            OutcomeOdd wagerOutcomeOdd = wager.getOutcomeOdd();
             for (Outcome outcome : winOutcomes) {
                 if (outcome.getOutcomeOdds().contains(wagerOutcomeOdd)) {
-                    wagers.get(i).setWagerState(WagerState.WIN);
+                    wager.setWagerState(WagerState.WIN);
+                    wagerRepository.update(wager);
                 } /*else {
 //                    wagers.get(i).setWagerState(WagerState.LOSE);
                 }*/
@@ -77,14 +79,13 @@ public class GameService {
         }
     }
 
-    private void resultComputing(List<Wager> wagers) {
-        wagers.stream()
-                .filter(wager -> WagerState.WIN.equals(wager.getWagerState()))
-                .forEach(this::calculateWinAmount);
+    private void resultComputing() {
+        List<Wager> winner = wagerRepository.findWinner();
+        winner.forEach(this::calculateWinAmount);
     }
 
     private void calculateWinAmount(Wager wager) {
-        wager.getPlayer().setBalance(wager.getAmount().multiply(wager.getOutcomeOdd().getOddValue()));
+        wager.getUserId().setBalance(wager.getAmount().multiply(wager.getOutcomeOdd().getOddValue()));
 
     }
 
@@ -112,8 +113,8 @@ public class GameService {
         return outcomes.get(random.nextInt(outcomes.size()));
     }
 
-
-    public Wager composeWager(User player, List<Bet> bets) throws StopProcessingException {
+    //    @Transaction
+    public void composeWager(User player, List<Bet> bets) throws StopProcessingException {
         DisplayedBet bet = betService.getChosenBet(bets);
         BigDecimal betAmount = currentBetAmount();
         boolean isEnoughBalance = userService.isEnoughBalance(player, betAmount);
@@ -123,21 +124,20 @@ public class GameService {
             betAmount = currentBetAmount();
             isEnoughBalance = userService.isEnoughBalance(player, betAmount);
         }
-        return receiveBet(player, bet, betAmount);
+        receiveBet(player, bet, betAmount);
+        userService.changeBalance(player, betAmount);
+        userService.showCurrentBalance(player);
     }
 
-    private Wager receiveBet(User player, DisplayedBet bet, BigDecimal betAmount) {
-        // TODO check if it is legal)
-        Wager wager = context.getBean(Wager.class);
-        wager.setPlayer(player);
+    private void receiveBet(User player, DisplayedBet bet, BigDecimal betAmount) {
+        Wager wager = new Wager();
+        wager.setUserId(player);
         wager.setAmount(betAmount);
         wager.setCurrency(player.getCurrency());
         wager.setOutcomeOdd(bet.getOutcomeOdd());
         wager.setCreatedTime(LocalDateTime.now());
-        userService.changeBalance(wager);
-        userService.showCurrentBalance(player);
-        System.out.println(wager.hashCode());
-        return wager;
+        wagerRepository.createWager(wager);
+//
     }
 
     public BigDecimal currentBetAmount() {

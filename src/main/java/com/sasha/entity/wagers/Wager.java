@@ -4,27 +4,49 @@ import com.sasha.entity.bets.OutcomeOdd;
 import com.sasha.entity.users.User;
 import com.sasha.util.Currency;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name="wager")
 public class Wager {
     //    Wager: the wager placed by a Player on an outcome;
 //    It stores the odd, the amount and the currency of the bet,
 //    the date and time when the bet is created and the state of having been processed or not.
-    private User player;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "user_id")
+    private String userId;
+    @Column(name = "outcome_odd_id")
     private OutcomeOdd outcomeOdd;
+    @Column
     private BigDecimal amount;
+    @Column
     private Currency currency;
+    @Column(name = "created_time")
     private LocalDateTime createdTime;
+    @Column(name = "is_processed")
     private boolean isProcessed;
+    @Column(name = "wager_state")
     private WagerState wagerState;
 
-    public User getPlayer() {
-        return player;
+    public Integer getId() {
+        return id;
     }
 
-    public void setPlayer(User player) {
-        this.player = player;
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public OutcomeOdd getOutcomeOdd() {
