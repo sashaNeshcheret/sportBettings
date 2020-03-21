@@ -6,24 +6,29 @@ import com.sasha.entity.wagers.Wager;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WagerRepositoryImpl implements WagerRepository{
+public class WagerRepositoryImpl<T extends Wager> implements WagerRepository<T>{
     @Override
-    public void createWager(Wager wager) {
+    public void create(T wager) {
 
     }
 
     @Override
-    public List<Wager> findByUser(User user) {
+    public T findById(Integer id) {
+        return null;
+    }
+
+    @Override
+    public List<T> findByUser(User user) {
         return new ArrayList<>();
     }
 
     @Override
-    public List<Wager> findAll() {
+    public List<T> findAll() {
         return new ArrayList<>();
     }
 
     @Override
-    public List<Wager> findWinner(){
+    public List<T> findWinner(){
         return new ArrayList<>();
     }
 

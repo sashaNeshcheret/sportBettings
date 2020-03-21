@@ -5,15 +5,10 @@ import com.sasha.entity.wagers.Wager;
 
 import java.util.List;
 
-public interface WagerRepository {
+public interface WagerRepository<T> extends Repository<T> {
 
-    void createWager(Wager wager);
+    List<T> findByUser(User user);
 
-    List<Wager> findByUser(User user);
+    List<T> findWinner();
 
-    List<Wager> findAll();
-
-    List<Wager> findWinner();
-
-    void update(Wager wager);
 }

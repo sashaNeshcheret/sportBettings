@@ -1,16 +1,10 @@
 package com.sasha.dataAccess;
 
-import com.sasha.entity.users.User;
-import org.springframework.util.StringUtils;
+public interface UserRepository<T> extends Repository<T> {
 
-public interface UserRepository {
+    T findById(Integer id);
 
-    void createUser(User user);
+    T findByName(String name);
 
-    User findById(Integer id);
-
-    User findByName(String name);
-
-    User update(User user);
 
 }
