@@ -1,7 +1,6 @@
 package com.sasha.dataAccess;
 
 import com.sasha.entity.users.User;
-import com.sasha.entity.wagers.Wager;
 
 import java.util.List;
 

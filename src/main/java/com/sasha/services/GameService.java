@@ -24,7 +24,7 @@ import java.util.Random;
 
 @Service
 public class GameService {
-    private SportEventCreator sportEventGenerator;
+    private SportEventCreator sportEventCreator;
     private BetService betService;
     private UserService userService;
     private UserFactory userFactory;
@@ -35,8 +35,8 @@ public class GameService {
     @Autowired
     private AnnotationConfigApplicationContext context;
 
-    public GameService(SportEventCreator sportEventGenerator, BetService betService, UserService userService, UserFactory userFactory, WagerRepository wagerRepository, BetIO betIO, Random random) {
-        this.sportEventGenerator = sportEventGenerator;
+    public GameService(SportEventCreator sportEventCreator, BetService betService, UserService userService, UserFactory userFactory, WagerRepository wagerRepository, BetIO betIO, Random random) {
+        this.sportEventCreator = sportEventCreator;
         this.betService = betService;
         this.userService = userService;
         this.userFactory = userFactory;
@@ -48,7 +48,7 @@ public class GameService {
 
     public void iterate() {
         User player = userFactory.getUser();
-        List<SportEvent> sportEvents = sportEventGenerator.generateSportsEvent();
+        List<SportEvent> sportEvents = sportEventCreator.generateSportsEvent();
         List<Bet> bets = betService.createBets(sportEvents);
         try {
             while (true) {
@@ -67,7 +67,7 @@ public class GameService {
     private void markWinners(List<Outcome> winOutcomes) {
         List<Wager> wagers = wagerRepository.findAll();
         for (Wager wager : wagers) {
-            OutcomeOdd wagerOutcomeOdd = wager.getOutcomeOdd();
+            OutcomeOdd wagerOutcomeOdd = wager.getOdd();
             for (Outcome outcome : winOutcomes) {
                 if (outcome.getOutcomeOdds().contains(wagerOutcomeOdd)) {
                     wager.setWagerState(WagerState.WIN);
@@ -85,7 +85,7 @@ public class GameService {
     }
 
     private void calculateWinAmount(Wager wager) {
-        wager.getUserId().setBalance(wager.getAmount().multiply(wager.getOutcomeOdd().getOddValue()));
+//        wager.getUserId().setBalance(wager.getAmount().multiply(wager.getOdd().getOddValue()));
 
     }
 
@@ -131,12 +131,12 @@ public class GameService {
 
     private void receiveBet(User player, DisplayedBet bet, BigDecimal betAmount) {
         Wager wager = new Wager();
-        wager.setUserId(player);
+        wager.setUserId(player.getName());
         wager.setAmount(betAmount);
         wager.setCurrency(player.getCurrency());
-        wager.setOutcomeOdd(bet.getOutcomeOdd());
+        wager.setOdd(bet.getOutcomeOdd());
         wager.setCreatedTime(LocalDateTime.now());
-        wagerRepository.createWager(wager);
+        wagerRepository.create(wager);
 //
     }
 

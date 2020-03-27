@@ -1,5 +1,8 @@
 package com.sasha.services;
 
+import com.sasha.dataAccess.BetRepository;
+import com.sasha.dataAccess.OutcomeOddRepository;
+import com.sasha.dataAccess.OutcomeRepository;
 import com.sasha.entity.bets.*;
 import com.sasha.entity.sportevents.FootballSportEvent;
 import com.sasha.entity.sportevents.SportEvent;
@@ -20,12 +23,16 @@ import java.util.logging.Logger;
 public class BetService {
     private final static Logger logger = Logger.getLogger("BetService");
     private BetIO betIO;
+    private BetRepository betRepository;
+    private OutcomeRepository outcomeRepository;
+    private OutcomeOddRepository outcomeOddRepository;
 
     @Autowired
     private AnnotationConfigApplicationContext context;
 
-    public BetService(BetIO betIO) {
+    public BetService(BetIO betIO,BetRepository betRepository) {
         this.betIO = betIO;
+        this.betRepository = betRepository;
     }
 
     public DisplayedBet getChosenBet(List<Bet> bets) throws StopProcessingException {
@@ -66,11 +73,16 @@ public class BetService {
     public List<Bet> createBets(List<SportEvent> sportEvents) {
         List<Bet> bets = new ArrayList<>();
         for (SportEvent event : sportEvents) {
-            bets.add(createWinBets(event));
+            Bet bet = createWinBets(event);
+            bets.add(bet);
+            betRepository.create(bet);
             if (event instanceof FootballSportEvent) {
-                bets.add(createGoalsBets(event));
+                Bet goalsBets = createGoalsBets(event);
+                bets.add(goalsBets);
+                betRepository.create(goalsBets);
 //                createScoreBets(event);
             }
+
         }
         return bets;
     }
@@ -110,6 +122,7 @@ public class BetService {
             outcome.setValue("the number of scored goals will be " + i);
             outcome.setOutcomeOdds(generateOutcomeOdds(event));
             outcomes.add(outcome);
+            outcomeRepository.create(outcome);
         }
         return outcomes;
     }
@@ -125,12 +138,14 @@ public class BetService {
         firstOutcomeOdd.setOddValue(new BigDecimal((int) (random.nextDouble() * 5)));
         firstOutcomeOdd.setValidFrom(finalDate.minusDays(10));
         firstOutcomeOdd.setValidTo(finalDate.minusDays(i));
+//        outcomeOddRepository.create(firstOutcomeOdd);
         odds.add(firstOutcomeOdd);
         OutcomeOdd secondOutcomeOdd = new OutcomeOdd();
         secondOutcomeOdd.setOutcomeOddValue("#2");
         secondOutcomeOdd.setOddValue(new BigDecimal((int) (random.nextDouble() * 5)));
         secondOutcomeOdd.setValidFrom(finalDate.minusDays(i));
         secondOutcomeOdd.setValidTo(finalDate);
+//        outcomeOddRepository.create(secondOutcomeOdd);
         odds.add(secondOutcomeOdd);
         return odds;
     }

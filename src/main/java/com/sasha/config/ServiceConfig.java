@@ -1,9 +1,11 @@
 package com.sasha.config;
 
+import com.sasha.dataAccess.*;
 import com.sasha.entity.bets.Bet;
 import com.sasha.entity.bets.Outcome;
 import com.sasha.entity.sportevents.FootballSportEvent;
 import com.sasha.entity.sportevents.TennisSportEvent;
+import com.sasha.entity.users.User;
 import com.sasha.entity.wagers.Wager;
 import com.sasha.services.BetService;
 import com.sasha.services.GameService;
@@ -45,8 +47,13 @@ public class ServiceConfig {
     private String tennisEventEndTime;
 
     @Bean
-    public GameService gameService(SportEventCreator sportEventGenerator, BetService betService, UserService userService, UserFactory userFactory, BetIO betIO, Random random){
-        return new GameService(sportEventGenerator, betService, userService, userFactory, betIO, random);
+    public GameService gameService(SportEventCreator sportEventCreator,
+                                   BetService betService,
+                                   UserService userService,
+                                   UserFactory userFactory,
+                                   WagerRepository wagerRepository,
+                                   BetIO betIO, Random random){
+        return new GameService(sportEventCreator, betService, userService, userFactory, wagerRepository, betIO, random);
     }
 
     @Bean
@@ -55,8 +62,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public BetService betService(BetIO betIO){
-        return new BetService(betIO);
+    public BetService betService(BetIO betIO, BetRepository betRepository){
+        return new BetService(betIO, betRepository);
     }
 
     @Bean
@@ -65,8 +72,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    public UserFactory userFactory(InputReader reader){
-        return new UserFactory(new HashMap<>(), reader);
+    public UserFactory userFactory(UserRepository<User> userRepository, InputReader reader){
+        return new UserFactory(userRepository, reader);
     }
 
     @Bean
@@ -136,4 +143,24 @@ public class ServiceConfig {
 //    public static PropertySourcesPlaceholderConfigurer configurer(){
 //        return new PropertySourcesPlaceholderConfigurer();
 //    }
+
+    @Bean
+    public WagerRepository<Wager> wagerRepository(){
+        return new WagerRepositoryImpl<>();
+    }
+
+    @Bean
+    public UserRepository<User> userRepository(){
+        return new UserRepositoryImpl<>();
+    }
+
+    @Bean
+    public OutcomeRepository<Outcome> outcomeRepository(){
+        return new OutcomeRepository<>();
+    }
+
+    @Bean
+    public BetRepository<Bet> betRepository(){
+        return new BetRepositoryImpl<>();
+    }
 }

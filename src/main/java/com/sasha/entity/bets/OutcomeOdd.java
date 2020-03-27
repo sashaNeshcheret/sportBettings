@@ -1,14 +1,33 @@
 package com.sasha.entity.bets;
 
+import com.sasha.entity.wagers.Wager;
+
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Entity
+@Table(name = "outcome_odd")
 public class OutcomeOdd {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "outcome_odd_value")
     private String OutcomeOddValue;
+
+    @Column(name = "odd_value")
     private BigDecimal oddValue;
-    private LocalDateTime validFrom;
+
+    @Column(name = "valid_to")
     private LocalDateTime validTo;
+
+    @Column(name = "valid_from")
+    private LocalDateTime validFrom;
+
+//    @OneToOne(mappedBy = "odd")
+    private Wager wager;
 
     public String getOutcomeOddValue() {
         return OutcomeOddValue;

@@ -1,7 +1,6 @@
 package com.sasha.entity.wagers;
 
 import com.sasha.entity.bets.OutcomeOdd;
-import com.sasha.entity.users.User;
 import com.sasha.util.Currency;
 
 import javax.persistence.*;
@@ -16,16 +15,19 @@ public class Wager {
 //    the date and time when the bet is created and the state of having been processed or not.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "wager_id")
     private Integer id;
 
     @Column(name = "user_id")
     private String userId;
-    @Column(name = "outcome_odd_id")
-    private OutcomeOdd outcomeOdd;
+    @OneToOne//(mappedBy = "wagers", cascade = CascadeType.ALL)
+    @JoinColumn(name = "outcome_odd_id")
+    private OutcomeOdd odd;
+//    private String odd;
     @Column
     private BigDecimal amount;
     @Column
-    private Currency currency;
+    private String currency;
     @Column(name = "created_time")
     private LocalDateTime createdTime;
     @Column(name = "is_processed")
@@ -49,12 +51,12 @@ public class Wager {
         this.userId = userId;
     }
 
-    public OutcomeOdd getOutcomeOdd() {
-        return outcomeOdd;
+    public OutcomeOdd getOdd() {
+        return null;
     }
 
-    public void setOutcomeOdd(OutcomeOdd outcomeOdd) {
-        this.outcomeOdd = outcomeOdd;
+    public void setOdd(OutcomeOdd odd) {
+        this.odd = odd;
     }
 
     public BigDecimal getAmount() {
@@ -65,12 +67,12 @@ public class Wager {
         this.amount = amount;
     }
 
-    public Currency getCurrency() {
+    public String getCurrency() {
         return currency;
     }
 
     public void setCurrency(Currency currency) {
-        this.currency = currency;
+        this.currency = currency.toString();
     }
 
     public LocalDateTime getCreatedTime() {

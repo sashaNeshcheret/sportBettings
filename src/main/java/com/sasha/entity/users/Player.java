@@ -7,11 +7,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
+@Table(name = "player")
 public class Player implements User {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    @Column
+    @Column(name = "name")
     private String name;
     @Column(name = "account_number")
     private long accountNumber;
