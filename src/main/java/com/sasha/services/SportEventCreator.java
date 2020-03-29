@@ -18,15 +18,15 @@ public class SportEventCreator {
     }
 
 
-    SportEvent createSportEvent(int eventNumber) {
+    FootballSportEvent createSportEvent(int eventNumber) {
 //        SportEvent sportEvent;
         switch (eventNumber) {
             case 0:
 //                sportEvent = createFootballEvent();
                 return footballEvent;
-            case 1:
-//                sportEvent = createTennisEvent();
-                return tennisEvent;
+//            case 1:
+////                sportEvent = createTennisEvent();
+//                return tennisEvent;
             default: return null;
         }
     }
@@ -43,11 +43,12 @@ public class SportEventCreator {
 //                LocalDateTime.parse("2020-03-20T10:00:00"));
 //    }
 
-    public List<SportEvent> generateSportsEvent(){
-        List<SportEvent> sportEvents = new ArrayList<>();
-        for(int i = 0; i < 2; i++){
+    public List<FootballSportEvent> generateSportsEvent(){
+        List<FootballSportEvent> sportEvents = new ArrayList<>();
+//        for(int i = 0; i < 2; i++){
+        int i = 0;
             sportEvents.add(createSportEvent(i));
-        }
+//        }
         return sportEvents;
     }
 

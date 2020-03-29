@@ -1,7 +1,6 @@
 package com.sasha.dataAccess;
 
-import org.springframework.stereotype.Repository;
+import com.sasha.entity.bets.Bet;
 
-@Repository
-public class BetRepository {
+public interface BetRepository<T> extends Repository<T> {
 }

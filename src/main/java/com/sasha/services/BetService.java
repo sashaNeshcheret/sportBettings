@@ -1,5 +1,8 @@
 package com.sasha.services;
 
+import com.sasha.dataAccess.BetRepository;
+import com.sasha.dataAccess.DisplayedBetRepository;
+import com.sasha.dataAccess.OutcomeOddRepository;
 import com.sasha.entity.bets.*;
 import com.sasha.entity.sportevents.FootballSportEvent;
 import com.sasha.entity.sportevents.SportEvent;
@@ -20,31 +23,36 @@ import java.util.logging.Logger;
 public class BetService {
     private final static Logger logger = Logger.getLogger("BetService");
     private BetIO betIO;
+    private BetRepository<Bet> betRepository;
+    private DisplayedBetRepository<DisplayedBet> displayedBetRepository;
+    private Random random;
 
     @Autowired
     private AnnotationConfigApplicationContext context;
 
-    public BetService(BetIO betIO) {
+    public BetService(BetIO betIO, BetRepository<Bet> betRepository, DisplayedBetRepository<DisplayedBet> displayedBetRepository, Random random) {
         this.betIO = betIO;
+        this.betRepository = betRepository;
+        this.displayedBetRepository = displayedBetRepository;
+        this.random = random;
     }
 
-    public DisplayedBet getChosenBet(List<Bet> bets) throws StopProcessingException {
-        List<DisplayedBet> displayedBets = receiveDisplayedBets(bets);
-        showCurrentDisplayedBets(displayedBets);
-        return receiveBet(displayedBets);
-    }
-
-    private List<DisplayedBet> receiveDisplayedBets(List<Bet> bets) {
+    public /*List<DisplayedBet>*/ void createDisplayedBets() {
         System.out.println("Please choose an outcome to bet on! (choose a number or press q for quit)");
         List<DisplayedBet> displayedBets = new ArrayList<>();
+        List<Bet> bets = betRepository.findAll();
         for (Bet bet : bets) {
             displayedBets.addAll(getDisplayedBetEvents(bet));
         }
-        return displayedBets;
+        for (DisplayedBet displayedBet : displayedBets) {
+            displayedBetRepository.create(displayedBet);
+        }
+        return;
     }
 
-    private void showCurrentDisplayedBets(List<DisplayedBet> displayedBets) {
+    public List<DisplayedBet> showCurrentDisplayedBets() {
         int i = 1;
+        List<DisplayedBet> displayedBets = displayedBetRepository.findAll();
         for (DisplayedBet displayedBet : displayedBets) {
             OutcomeOdd outcomeOdd = displayedBet.getOutcomeOdd();
             System.out.println(i++ + ": Bet on the " + displayedBet.getEventTitle() + " sport event, " +
@@ -53,9 +61,10 @@ public class BetService {
                     ", valid from " + outcomeOdd.getValidFrom() +
                     " to " + outcomeOdd.getValidTo());
         }
+        return displayedBets;
     }
 
-    private DisplayedBet receiveBet(List<DisplayedBet> bets) throws StopProcessingException {
+    public DisplayedBet receiveBet(List<DisplayedBet> bets) throws StopProcessingException {
         String variant = betIO.getInputtedBetVariant();
         if ("q".equalsIgnoreCase(variant)) {
             throw new StopProcessingException();
@@ -63,29 +72,34 @@ public class BetService {
         return bets.get(Integer.valueOf(variant) - 1);
     }
 
-    public List<Bet> createBets(List<SportEvent> sportEvents) {
+    public /*List<Bet>*/void createBets(List<FootballSportEvent> sportEvents) {
         List<Bet> bets = new ArrayList<>();
-        for (SportEvent event : sportEvents) {
-            bets.add(createWinBets(event));
+        for (FootballSportEvent event : sportEvents) {
+            Bet bet = createWinBets(event);
+            bets.add(bet);
+            betRepository.create(bet);
             if (event instanceof FootballSportEvent) {
-                bets.add(createGoalsBets(event));
+                Bet goalsBets = createGoalsBets(event);
+                bets.add(goalsBets);
+                betRepository.create(goalsBets);
 //                createScoreBets(event);
             }
+
         }
-        return bets;
+//        return bets;
     }
 
-    private Bet createWinBets(SportEvent event) {
+    private Bet createWinBets(FootballSportEvent event) {
         Bet bet = context.getBean(Bet.class);
-        bet.setSportEvent(event);
+        bet.setEvent(event);
         bet.setBetsType(BetsType.WinnerBet);
         bet.setOutcomeList(createOutcomes(event, BetsType.WinnerBet));
         return bet;
     }
 
-    private Bet createGoalsBets(SportEvent event) {
+    private Bet createGoalsBets(FootballSportEvent event) {
         Bet bet = context.getBean(Bet.class);
-        bet.setSportEvent(event);
+        bet.setEvent(event);
         bet.setBetsType(BetsType.GoalsBet);
         bet.setOutcomeList(createOutcomes(event));
         return bet;
@@ -99,6 +113,7 @@ public class BetService {
             outcome.setValue(value.trim());
             outcome.setOutcomeOdds(generateOutcomeOdds(event));
             outcomes.add(outcome);
+//            outcomeRepository.create(outcome);
         }
         return outcomes;
     }
@@ -110,6 +125,7 @@ public class BetService {
             outcome.setValue("the number of scored goals will be " + i);
             outcome.setOutcomeOdds(generateOutcomeOdds(event));
             outcomes.add(outcome);
+//            outcomeRepository.create(outcome);
         }
         return outcomes;
     }
@@ -125,12 +141,14 @@ public class BetService {
         firstOutcomeOdd.setOddValue(new BigDecimal((int) (random.nextDouble() * 5)));
         firstOutcomeOdd.setValidFrom(finalDate.minusDays(10));
         firstOutcomeOdd.setValidTo(finalDate.minusDays(i));
+//        outcomeOddRepository.create(firstOutcomeOdd);
         odds.add(firstOutcomeOdd);
         OutcomeOdd secondOutcomeOdd = new OutcomeOdd();
         secondOutcomeOdd.setOutcomeOddValue("#2");
         secondOutcomeOdd.setOddValue(new BigDecimal((int) (random.nextDouble() * 5)));
         secondOutcomeOdd.setValidFrom(finalDate.minusDays(i));
         secondOutcomeOdd.setValidTo(finalDate);
+//        outcomeOddRepository.create(secondOutcomeOdd);
         odds.add(secondOutcomeOdd);
         return odds;
     }
@@ -139,7 +157,7 @@ public class BetService {
         List<DisplayedBet> displayedBets = new ArrayList<>();
         for (Outcome outcome : bet.getOutcomeList()) {
             DisplayedBet displayedBet = new DisplayedBet();
-            displayedBet.setEventTitle(bet.getSportEvent().getTitle());
+            displayedBet.setEventTitle(bet.getEvent().getTitle());
             displayedBet.setBetTitle(outcome.getValue());
             OutcomeOdd currentOdd;
             try {
@@ -162,5 +180,29 @@ public class BetService {
             }
         }
         throw new UnsupportedBetException();
+    }
+
+    public List<Outcome> gameSimulation() {
+        List<Outcome> winner = new ArrayList<>();
+        List<Bet> bets = betRepository.findAll();
+        for (Bet bet : bets) {
+            switch (bet.getBetsType()) {
+                case "WinnerBet":
+                    winner.add(winnerSimulation(bet));
+                    break;
+                case "GoalsBet":
+                case "ScoreBet":
+                    winner.add(scoreGoalsSimulation(bet));
+            }
+        }
+        return winner;
+    }
+    private Outcome winnerSimulation(Bet bet) {
+        return bet.getOutcomeList().get(random.nextInt(2));
+    }
+
+    private Outcome scoreGoalsSimulation(Bet bet) {
+        List<Outcome> outcomes = bet.getOutcomeList();
+        return outcomes.get(random.nextInt(outcomes.size()));
     }
 }

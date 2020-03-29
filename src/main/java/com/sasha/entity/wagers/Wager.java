@@ -1,38 +1,62 @@
 package com.sasha.entity.wagers;
 
 import com.sasha.entity.bets.OutcomeOdd;
-import com.sasha.entity.users.User;
 import com.sasha.util.Currency;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name="wager")
 public class Wager {
     //    Wager: the wager placed by a Player on an outcome;
 //    It stores the odd, the amount and the currency of the bet,
 //    the date and time when the bet is created and the state of having been processed or not.
-    private User player;
-    private OutcomeOdd outcomeOdd;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "wager_id")
+    private Integer id;
+
+    @Column(name = "user_id")
+    private String userId;
+    @OneToOne//(mappedBy = "wagers", cascade = CascadeType.ALL)
+    @JoinColumn(name = "outcome_odd_id")
+    private OutcomeOdd odd;
+//    private String odd;
+    @Column
     private BigDecimal amount;
-    private Currency currency;
+    @Column
+    private String currency;
+    @Column(name = "created_time")
     private LocalDateTime createdTime;
+    @Column(name = "is_processed")
     private boolean isProcessed;
+    @Column(name = "wager_state")
     private WagerState wagerState;
 
-    public User getPlayer() {
-        return player;
+    public Integer getId() {
+        return id;
     }
 
-    public void setPlayer(User player) {
-        this.player = player;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public OutcomeOdd getOutcomeOdd() {
-        return outcomeOdd;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setOutcomeOdd(OutcomeOdd outcomeOdd) {
-        this.outcomeOdd = outcomeOdd;
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public OutcomeOdd getOdd() {
+        return null;
+    }
+
+    public void setOdd(OutcomeOdd odd) {
+        this.odd = odd;
     }
 
     public BigDecimal getAmount() {
@@ -43,12 +67,12 @@ public class Wager {
         this.amount = amount;
     }
 
-    public Currency getCurrency() {
+    public String getCurrency() {
         return currency;
     }
 
     public void setCurrency(Currency currency) {
-        this.currency = currency;
+        this.currency = currency.toString();
     }
 
     public LocalDateTime getCreatedTime() {

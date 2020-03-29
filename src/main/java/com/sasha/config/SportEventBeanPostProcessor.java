@@ -1,5 +1,6 @@
 package com.sasha.config;
 
+import com.sasha.entity.sportevents.FootballSportEvent;
 import com.sasha.entity.sportevents.SportEvent;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -31,7 +32,7 @@ public class SportEventBeanPostProcessor implements BeanPostProcessor {
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         Class<?> aClass = mapNameToClass.get(beanName);
         if(null != aClass){
-            SportEvent sportEvent = (SportEvent) bean;
+            FootballSportEvent sportEvent = (FootballSportEvent) bean;
             if (StringUtils.startsWithIgnoreCase(sportEvent.getTitle(), "$")) {
                 sportEvent.setTitle("barabaka vs sabaka");
             }

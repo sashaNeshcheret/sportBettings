@@ -1,7 +1,9 @@
 package com.sasha.dataAccess;
 
-import org.springframework.stereotype.Repository;
+import com.sasha.entity.users.User;
 
-@Repository
-public class UserRepository {
+public interface UserRepository<T extends User> extends Repository<T> {
+
+    T findById(String name);
+
 }

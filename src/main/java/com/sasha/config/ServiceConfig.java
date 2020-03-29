@@ -1,14 +1,14 @@
 package com.sasha.config;
 
+import com.sasha.dataAccess.*;
 import com.sasha.entity.bets.Bet;
+import com.sasha.entity.bets.DisplayedBet;
 import com.sasha.entity.bets.Outcome;
 import com.sasha.entity.sportevents.FootballSportEvent;
 import com.sasha.entity.sportevents.TennisSportEvent;
+import com.sasha.entity.users.User;
 import com.sasha.entity.wagers.Wager;
-import com.sasha.services.BetService;
-import com.sasha.services.GameService;
-import com.sasha.services.SportEventCreator;
-import com.sasha.services.UserService;
+import com.sasha.services.*;
 import com.sasha.ui.BetIO;
 import com.sasha.ui.InputReader;
 import com.sasha.ui.UserFactory;
@@ -45,8 +45,13 @@ public class ServiceConfig {
     private String tennisEventEndTime;
 
     @Bean
-    public GameService gameService(SportEventCreator sportEventGenerator, BetService betService, UserService userService, UserFactory userFactory, BetIO betIO, Random random){
-        return new GameService(sportEventGenerator, betService, userService, userFactory, betIO, random);
+    public GameService gameService(SportEventCreator sportEventCreator,
+                                   BetService betService,
+                                   UserService userService,
+                                   UserFactory userFactory,
+                                   WagerRepository wagerRepository,
+                                   BetIO betIO, Random random){
+        return new GameService(sportEventCreator, betService, userService, userFactory, wagerRepository, betIO);
     }
 
     @Bean
@@ -55,8 +60,11 @@ public class ServiceConfig {
     }
 
     @Bean
-    public BetService betService(BetIO betIO){
-        return new BetService(betIO);
+    public BetService betService(BetIO betIO,
+                                 BetRepository<Bet> betRepository,
+                                 DisplayedBetRepository<DisplayedBet> displayedBetRepository,
+                                 Random random){
+        return new BetService(betIO, betRepository, displayedBetRepository, random);
     }
 
     @Bean
@@ -65,8 +73,13 @@ public class ServiceConfig {
     }
 
     @Bean
-    public UserFactory userFactory(InputReader reader){
-        return new UserFactory(new HashMap<>(), reader);
+    public UserFactory userFactory(UserRepository<User> userRepository, InputReader reader){
+        return new UserFactory(userRepository, reader);
+    }
+
+    @Bean
+    public WagerService wagerService(WagerRepository<Wager> wagerRepository){
+        return new WagerService(wagerRepository);
     }
 
     @Bean
@@ -136,4 +149,29 @@ public class ServiceConfig {
 //    public static PropertySourcesPlaceholderConfigurer configurer(){
 //        return new PropertySourcesPlaceholderConfigurer();
 //    }
+
+    @Bean
+    public WagerRepository<Wager> wagerRepository(){
+        return new WagerRepositoryImpl<>();
+    }
+
+    @Bean
+    public DisplayedBetRepository<DisplayedBet> displayedBetRepository(){
+        return new DisplayedBetRepositoryImpl<>();
+    }
+
+    @Bean
+    public UserRepository<User> userRepository(){
+        return new UserRepositoryImpl<>();
+    }
+
+    @Bean
+    public OutcomeRepository<Outcome> outcomeRepository(){
+        return new OutcomeRepository<>();
+    }
+
+    @Bean
+    public BetRepository<Bet> betRepository(){
+        return new BetRepositoryImpl<>();
+    }
 }

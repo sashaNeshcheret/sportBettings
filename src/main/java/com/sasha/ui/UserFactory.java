@@ -1,19 +1,23 @@
 package com.sasha.ui;
 
+import com.sasha.dataAccess.UserRepository;
+import com.sasha.dataAccess.UserRepositoryImpl;
 import com.sasha.entity.users.Player;
 import com.sasha.entity.users.User;
 import com.sasha.util.Currency;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Map;
 
 
 public class UserFactory {
     private Map<String, User> userMap;
+    private UserRepository<User> userRepository;
     private InputReader reader;
-    public UserFactory(Map<String, User> userMap, InputReader reader) {
-        this.userMap = userMap;
+    public UserFactory(UserRepository<User> userRepository, InputReader reader) {
+        this.userRepository = userRepository;
         this.reader = reader;
     }
 
@@ -33,20 +37,21 @@ public class UserFactory {
                 .setCurrency(currency)
                 .setDateOfBirth(dateOfBirth)
                 .build();
-        userMap.put(userName, player);
-        System.out.println("Welcome " + userName + "!\n" +
-                "Your balance is " + player.getBalance() + " " + player.getCurrency() + "\n");
+        userRepository.create(player);
+        User savedUser = userRepository.findById(userName);
+        System.out.println("Welcome " + savedUser.getName() + "!\n" +
+                "Your balance is " + savedUser.getBalance() + " " + savedUser.getCurrency() + "\n");
         return player;
     }
 
     public User getUser() {
         System.out.println("Hi, what is your name?");
-        String username = reader.getNextLine();
-        if (userMap.containsKey(username)) {
-            System.out.println("Hello, " + username + "nice to meet you again");
-            return userMap.get(username);
+        String userName = reader.getNextLine();
+        User user = userRepository.findById(userName);
+        System.out.println("you are in the DB = " + user);
+        if(null == user){
+            user = createUser(userName);
         }
-
-        return createUser(username);
+        return user;
     }
 }
