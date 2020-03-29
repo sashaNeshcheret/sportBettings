@@ -47,7 +47,8 @@ public class UserFactory {
     public User getUser() {
         System.out.println("Hi, what is your name?");
         String userName = reader.getNextLine();
-        User user = null; //userRepository.findById(userName);
+        User user = userRepository.findById(userName);
+        System.out.println("you are in the DB = " + user);
         if(null == user){
             user = createUser(userName);
         }

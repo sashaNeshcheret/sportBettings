@@ -1,11 +1,23 @@
 package com.sasha.entity.bets;
 
-
+import javax.persistence.*;
 import java.util.List;
 import java.util.Objects;
 
+@Entity
+@Table(name = "outcome")
 public class Outcome {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column
     private String value;
+
+    @OneToMany(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name="outcome_outcome_odd", joinColumns={@JoinColumn(name="outcome_id", referencedColumnName="id")}
+            , inverseJoinColumns={@JoinColumn(name="outcome_odd_id", referencedColumnName="id")})
     private List<OutcomeOdd> outcomeOdds;
 
 //    public Outcome(String value, List<OutcomeOdd> outcomeOdds) {
@@ -13,6 +25,14 @@ public class Outcome {
 //        this.outcomeOdds = outcomeOdds;
 //    }
 
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public String getValue() {
         return value;

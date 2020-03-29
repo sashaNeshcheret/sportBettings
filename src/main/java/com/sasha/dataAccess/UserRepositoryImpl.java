@@ -40,18 +40,19 @@ public class UserRepositoryImpl<T extends User> implements UserRepository<T> {
 
     @Override
     public T findById(String name) {
-        T user = null;
-        SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+        User user = null;
+//        SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
         try (Session session = sessionFactory.openSession()) {
 
-            session.beginTransaction();
+//            session.beginTransaction();
 
-            user = (T) session.get(Player.class, name);
+            user = session.get(Player.class, name);
 
-            session.getTransaction().commit();
+
+//            session.getTransaction().commit();
 
         }
-        return user;
+        return (T) user;
     }
 
 

@@ -11,7 +11,6 @@ import java.time.LocalDate;
 public class Player implements User {
 
     @Id
-    @Column(name = "name")
     private String name;
     @Column(name = "account_number")
     private long accountNumber;

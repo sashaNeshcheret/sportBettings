@@ -2,8 +2,13 @@ package com.sasha.util;
 
 import java.util.Properties;
 
+import com.sasha.entity.bets.Bet;
+import com.sasha.entity.bets.DisplayedBet;
 import com.sasha.entity.bets.Outcome;
 import com.sasha.entity.bets.OutcomeOdd;
+import com.sasha.entity.sportevents.FootballSportEvent;
+import com.sasha.entity.sportevents.SportEvent;
+import com.sasha.entity.sportevents.TennisSportEvent;
 import com.sasha.entity.users.Player;
 import com.sasha.entity.wagers.Wager;
 import org.hibernate.SessionFactory;
@@ -23,17 +28,22 @@ public class HibernateUtil {
                 // Hibernate settings equivalent to hibernate.cfg.xml's properties
                 Properties settings = new Properties();
                 settings.put(Environment.DRIVER, "com.mysql.jdbc.Driver");
-                settings.put(Environment.URL, "jdbc:mysql://localhost:3306/sport_betting?useSSL=false");
+                settings.put(Environment.URL, "jdbc:mysql://localhost:3306/sport_betting?useSSL=false&serverTimezone=UTC");
                 settings.put(Environment.USER, "root");
-                settings.put(Environment.PASS, "root");
+                settings.put(Environment.PASS, "sasha");
                 settings.put(Environment.DIALECT, "org.hibernate.dialect.MySQL57Dialect");
-                settings.put(Environment.SHOW_SQL, "true");
+                settings.put(Environment.SHOW_SQL, "false");
                 settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
-                settings.put(Environment.HBM2DDL_AUTO, "create");
+                settings.put(Environment.HBM2DDL_AUTO, "create-drop");
                 configuration.setProperties(settings);
                 configuration.addAnnotatedClass(Wager.class);
                 configuration.addAnnotatedClass(Player.class);
+                configuration.addAnnotatedClass(Outcome.class);
                 configuration.addAnnotatedClass(OutcomeOdd.class);
+                configuration.addAnnotatedClass(Bet.class);
+                configuration.addAnnotatedClass(FootballSportEvent.class);
+//                configuration.addAnnotatedClass(TennisSportEvent.class);
+                configuration.addAnnotatedClass(DisplayedBet.class);
                 ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                         .applySettings(configuration.getProperties()).build();
                 sessionFactory = configuration.buildSessionFactory(serviceRegistry);

@@ -26,7 +26,7 @@ public class OutcomeOdd {
     @Column(name = "valid_from")
     private LocalDateTime validFrom;
 
-//    @OneToOne(mappedBy = "odd")
+    @OneToOne(mappedBy = "odd")
     private Wager wager;
 
     public String getOutcomeOddValue() {
